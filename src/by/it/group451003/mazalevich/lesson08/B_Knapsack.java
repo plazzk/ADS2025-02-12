@@ -1,4 +1,5 @@
-package by.it.group451003.avrusevich.lesson08;
+package by.it.group451003.mazalevich.lesson08;
+
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Scanner;
@@ -26,7 +27,7 @@ Sample Output:
 
 public class B_Knapsack {
 
-    public int getMaxWeight(InputStream stream) {
+    int getMaxWeight(InputStream stream ) {
         //!!!!!!!!!!!!!!!!!!!!!!!!!     НАЧАЛО ЗАДАЧИ     !!!!!!!!!!!!!!!!!!!!!!!!!
         Scanner scanner = new Scanner(stream);
         int w=scanner.nextInt();

@@ -1,4 +1,4 @@
-package by.it.group451003.avrusevich.lesson08;
+package by.it.group451003.mazalevich.lesson08;
 
 
 import java.io.FileNotFoundException;
@@ -34,7 +34,7 @@ Sample Output 3:
 
 public class C_Stairs {
 
-    public int getMaxSum(InputStream stream) {
+    int getMaxSum(InputStream stream ) {
         Scanner scanner = new Scanner(stream);
         int n=scanner.nextInt();
         int stairs[]=new int[n];
