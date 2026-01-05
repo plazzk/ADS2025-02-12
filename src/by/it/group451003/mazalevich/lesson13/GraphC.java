@@ -1,91 +1,95 @@
 package by.it.group451003.mazalevich.lesson13;
+
 import java.util.*;
+
 public class GraphC {
-    static class LexicalComparator implements Comparator<String> {
-        public int compare(String s1, String s2) {
-            return s2.compareTo(s1);
-        }
-    }
 
     public static void main(String[] args) {
-        Map<String, ArrayList<String>> neighbours = new HashMap<>();
-        Stack<String> st = new Stack<>();
-        Set<String> vis = new HashSet<>();
+        Map<String, ArrayList<String>> graph = new HashMap<>();
+        Map<String, ArrayList<String>> reversedGraph = new HashMap<>();
+        Set<String> vertices = new HashSet<>();
+        Stack<String> stack = new Stack<>();
+        Set<String> visited = new HashSet<>();
 
+        // Чтение и парсинг входных данных
         Scanner scanner = new Scanner(System.in);
-        String[] vals = scanner.nextLine().split(",");
+        String input = scanner.nextLine();
         scanner.close();
 
-        String start;
-        String end;
+        String[] edges = input.split(",\\s*");
+        for (String edge : edges) {
+            String[] parts = edge.split("->");
+            String from = parts[0].trim();
+            String to = parts[1].trim();
 
-        for (String s : vals) {
-            String[] current = s.trim().split("");
-            start = current[0];
-            end = (current[current.length - 1]);
-            if (neighbours.get(start) == null)
-                neighbours.put(start, new ArrayList<>());
+            vertices.add(from);
+            vertices.add(to);
 
-            neighbours.get(start).add(end);
+            graph.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
+            reversedGraph.computeIfAbsent(to, k -> new ArrayList<>()).add(from);
         }
 
-        for (ArrayList<String> list: neighbours.values()) {
-            list.sort(new LexicalComparator());
+        // Сортировка списков смежности для детерминированного обхода
+        for (ArrayList<String> list : graph.values()) {
+            Collections.sort(list);
+        }
+        for (ArrayList<String> list : reversedGraph.values()) {
+            Collections.sort(list);
         }
 
-        for (String w : neighbours.keySet()) {
-            if (!vis.contains(w)) {
-                dfs(neighbours, w, vis, st);
+        // Первый DFS: заполнение стека порядком завершения
+        for (String vertex : vertices) {
+            if (!visited.contains(vertex)) {
+                dfs1(graph, vertex, visited, stack);
             }
         }
 
-        Map<String, ArrayList<String>> transpNeighbours = new HashMap<>();
-        for (String v :neighbours.keySet()) {
-            ArrayList<String> list = neighbours.get(v);
-            for (String child : list) {
-                if (transpNeighbours.get(child) == null)
-                    transpNeighbours.put(child, new ArrayList<>());
-                transpNeighbours.get(child).add(v);
+        // Второй DFS: поиск компонент сильной связности
+        visited.clear();
+        List<String> components = new ArrayList<>();
+        while (!stack.isEmpty()) {
+            String vertex = stack.pop();
+            if (!visited.contains(vertex)) {
+                StringBuilder component = new StringBuilder();
+                dfs2(reversedGraph, vertex, visited, component);
+
+                // Сортировка вершин внутри компоненты
+                char[] chars = component.toString().toCharArray();
+                Arrays.sort(chars);
+                components.add(new String(chars));
             }
         }
 
-        vis.clear();
-        while (!st.empty()) {
-            String v = st.pop();
-            if (!vis.contains(v)) {
-                StringBuilder sb = new StringBuilder();
-                dfs(transpNeighbours, v, vis, sb);
-                char[] charArr = sb.toString().toCharArray();
-                Arrays.sort(charArr);
-                System.out.println(charArr);
-            }
+        // Вывод компонент
+        for (String component : components) {
+            System.out.println(component);
         }
-
     }
 
-    private static void dfs(Map<String, ArrayList<String>> neighbours,
-                            String v, Set<String> vis, Stack<String> st) {
-        vis.add(v);
+    private static void dfs1(Map<String, ArrayList<String>> graph,
+                             String vertex, Set<String> visited, Stack<String> stack) {
+        visited.add(vertex);
 
-        if (neighbours.get(v) != null) {
-            for (String child : neighbours.get(v)) {
-                if (!vis.contains(child)) {
-                    dfs(neighbours, child, vis, st);
+        if (graph.containsKey(vertex)) {
+            for (String neighbor : graph.get(vertex)) {
+                if (!visited.contains(neighbor)) {
+                    dfs1(graph, neighbor, visited, stack);
                 }
             }
         }
 
-        st.push(v);
+        stack.push(vertex);
     }
 
-    private static void dfs(Map<String, ArrayList<String>> neighbours,
-                            String v, Set<String> vis, StringBuilder sb) {
-        vis.add(v);
-        sb.append(v);
-        if (neighbours.get(v) != null) {
-            for (String child : neighbours.get(v)) {
-                if (!vis.contains(child)) {
-                    dfs(neighbours, child, vis, sb);
+    private static void dfs2(Map<String, ArrayList<String>> graph,
+                             String vertex, Set<String> visited, StringBuilder component) {
+        visited.add(vertex);
+        component.append(vertex);
+
+        if (graph.containsKey(vertex)) {
+            for (String neighbor : graph.get(vertex)) {
+                if (!visited.contains(neighbor)) {
+                    dfs2(graph, neighbor, visited, component);
                 }
             }
         }
